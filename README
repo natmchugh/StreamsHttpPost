@@ -1,0 +1,15 @@
+StreamsHttpPost is a class to allow sending of files and other datat over HTTP post method specifically without using the cURL library or any none core PHP extensions.
+
+Instead it makes use of the streams extension and setts the data as a stream context. This allows the sending of post requests without the need for libcurl.
+
+To Use:
+
+$request = new StreamsHttpPost('http://example.com');
+$data = array(
+'foo' => 'bar',
+'baz' => 'bat',
+);
+
+$request->addData($data);
+
+$page = $request->post();
