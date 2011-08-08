@@ -10,6 +10,4 @@ $data = array(
 'baz' => 'bat',
 );
 
-$request->addData($data);
-
-$page = $request->post();
+$page = $request->post($data);
