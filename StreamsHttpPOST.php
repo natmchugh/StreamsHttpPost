@@ -20,7 +20,10 @@ class StreamsHttpPOST {
 	}
 
 	public function addFile($filename, $file) {
-		
+		if (!($this->_form instanceof  MultipartFormData)) {
+		 $this->_form = new MultipartFormData($this->_form->getData());
+		}
+		$this->_form->addFile($filename, $file);
 	}
 
 	public function getResponseCode() {
@@ -96,7 +99,6 @@ class MultipartFormData extends FormData
 	private $_multipartBoundary = "";
 
 	public function  __construct($data = array()) {
-		define('CRLF', PHP_EOL);
 		parent::__construct($data);
 		$this->_multipartBoundary = md5(microtime(true));
 	}
@@ -115,23 +117,22 @@ class MultipartFormData extends FormData
 			$filename = realpath($filename);
 			$file_contents = file_get_contents($filename);
 
-			$content .= "--{$this->_multipartBoundary}".CRLF.
-			'Content-Disposition: form-data; name="'.$fieldName.'"; filename="'.basename($filename).'"'.CRLF.
-			"Content-Type: application/zip".CRLF.
-			$file_contents.CRLF;
+			$content .= "--{$this->_multipartBoundary}".PHP_EOL.
+			'Content-Disposition: form-data; name="'.$fieldName.'"; filename="'.basename($filename).'"'.PHP_EOL.
+			"Content-Type: application/zip".PHP_EOL.
+			$file_contents.PHP_EOL;
 
 		}
 
-		$content .= "--{$this->_multipartBoundary}".CRLF.
+		$content .= "--{$this->_multipartBoundary}".PHP_EOL.
 		'Content-Disposition: form-data; ';
 	    foreach ($this->getData() as $name => $value) {
-			$content .= 'name="'.$name.'"'.CRLF.
-//			"Content-type: text/plain;charset=windows-1250".CRLF.
-			$value.CRLF;
+			$content .= 'name="'.$name.'"'.PHP_EOL.
+			$value.PHP_EOL;
 		}
 
 		// signal end of request (note the trailing "--")
-		$content .= "--{$this->_multipartBoundary}--".CRLF;
+		$content .= "--{$this->_multipartBoundary}--".PHP_EOL;
 		return $content;
 	}
 }

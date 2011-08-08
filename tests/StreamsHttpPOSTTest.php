@@ -31,18 +31,12 @@ class StreamsHttpPOSTTest extends PHPUnit_Framework_TestCase {
 
 	}
 
-	/**
-	 * @todo Implement testPost().
-	 */
 	public function testPost() {
 		$contents = $this->object->post();
 		$expected = "RFC 2606";
 		$this->assertContains($expected, $contents);
 	}
 
-	/**
-	 * @todo Implement testPost().
-	 */
 	public function testPostToLocalhost() {
 		$this->object = new StreamsHttpPOST('http://localhost/outputPost.php');
 		$data = array('foo' => 'bar');
@@ -52,33 +46,39 @@ class StreamsHttpPOSTTest extends PHPUnit_Framework_TestCase {
 		$this->assertContains($expected, $contents);
 	}
 
-		/**
-	 * @todo Implement testPost().
-	 */
+	public function testPostToLocalhostMultipleFields() {
+		$this->object = new StreamsHttpPOST('http://localhost/outputPost.php');
+		$data = array('foo' => 'bar', 'baz' => 'bat');
+		$this->object->addData($data);
+		$contents = $this->object->post();
+		$expected = "bat";
+		$this->assertContains($expected, $contents);
+	}
+
 	public function testPostFilesToLocalhost() {
 		$data = array('foo' => 'bar');
 		$multipartFormData = new MultipartFormData($data);
 		$multipartFormData->addFile('test', __FILE__);
-//		var_dump($multipartFormData->getHeader(), $multipartFormData->getContentString());
-		echo $multipartFormData->getContentString();
 		$this->object = new StreamsHttpPOST('http://localhost/outputPost.php',$multipartFormData);
 		$contents = $this->object->post();
 		$expected = "bar";
-		var_dump($contents);
 		$this->assertContains($expected, $contents);
+
+		$this->assertContains(basename(__FILE__), $contents);
 	}
-		/**
-	 * @todo Implement testPost().
-	 */
+
+
+	public function testAddFilesToLocalhost() {
+		$this->object = new StreamsHttpPOST('http://localhost/outputPost.php');
+		$this->object->addFile('test', __FILE__);
+		$contents = $this->object->post();
+		var_dump($contents);
+		$this->assertContains(basename(__FILE__), $contents);
+	}
 	public function testGetResponseCode() {
 		$this->object->post();
 		$code = $this->object->getResponseCode();
 		$expected = 302;
 		$this->assertSame($expected, $code);
 	}
-
-
-
 }
-
-?>

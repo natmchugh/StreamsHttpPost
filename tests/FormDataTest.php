@@ -20,7 +20,7 @@ class FormDataTest extends PHPUnit_Framework_TestCase {
 	 * This method is called before a test is executed.
 	 */
 	protected function setUp() {
-		$this->object = new FormData;
+		$this->object = new FormData();
 	}
 
 	/**
@@ -42,14 +42,10 @@ class FormDataTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame($data, $expected);
 	}
 
-	/**
-	 * @todo Implement testGetData().
-	 */
 	public function testGetData() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
+		$data = array('beans' => 'toast');
+		$this->object = new FormData($data);
+		$this->assertSame($data, $this->object->getData());
 	}
 
 	/**
@@ -66,7 +62,9 @@ class FormDataTest extends PHPUnit_Framework_TestCase {
 	 * @todo Implement testGetContentString().
 	 */
 	public function testGetContentString() {
-		$contentString  = $this->object->getContentString(array('foo' => 'bar'));
+		$this->object->addData('foo', 'bar');
+		$data = $this->object->getData();
+		$contentString  = $this->object->getContentString();
 		$expected = 'foo=bar';
 		$this->assertSame($contentString, $expected);
 	}
@@ -75,10 +73,8 @@ class FormDataTest extends PHPUnit_Framework_TestCase {
 	 * @todo Implement testGetHeader().
 	 */
 	public function testGetHeader() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
+		$expected = 'Content-type: application/x-www-form-urlencoded';
+		$this->assertSame($expected, $this->object->getHeader());
 	}
 
 

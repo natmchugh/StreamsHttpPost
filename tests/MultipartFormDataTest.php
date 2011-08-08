@@ -41,14 +41,9 @@ class MultipartFormDataTest extends PHPUnit_Framework_TestCase {
 		);
 	}
 
-	/**
-	 * @todo Implement testGetHeader().
-	 */
 	public function testGetHeader() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
+		$expected = "/Content-Type: multipart\/form-data; boundary=([\w\d]+)/";
+		$this->assertRegExp($expected, $this->object->getHeader());
 	}
 
 	/**
