@@ -19,6 +19,10 @@ class StreamsHttpPOST {
 		}
 	}
 
+	public function addFile($filename, $file) {
+		
+	}
+
 	public function getResponseCode() {
 		foreach ($this->_responseHeaders as $header) {
 			if (preg_match('/HTTP\/(\d\.\d) ([\d]+) ([\w]+)/', $header, $matches)) {
@@ -34,7 +38,10 @@ class StreamsHttpPOST {
 	}
 
 
-	public function post() {
+	public function post($data = array()) {
+		if (!empty($data)) {
+			$this->addData($data);
+		}
 		$content = file_get_contents($this->_url, false, $this->_form->createStreamContext());
 		$this->_responseHeaders = $http_response_header;
 		return $content;
