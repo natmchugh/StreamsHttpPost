@@ -1,0 +1,9 @@
+<?php
+include('StreamsHttpPost.php');
+$request = new StreamsHttpPost('http://example.com');
+$data = array(
+'foo' => 'bar',
+'baz' => 'bat',
+);
+$page = $request->post($data);
+var_dump($request->getResponseCode()); // int(302)

@@ -10,12 +10,12 @@ class StreamsHttpPOST {
 
 	private $_form;
 
-	public function __construct($url, $formDataObject = null,  $dataArray = array()) {
+	public function __construct($url, $formData = array()) {
 		$this->_url = $url;
-		if ($formDataObject instanceof FormData) {
-			$this->_form = $formDataObject;
+		if ($formData instanceof FormData) {
+			$this->_form = $formData;
 		} else {
-			$this->_form = new FormData($dataArray);
+			$this->_form = new FormData($formData);
 		}
 	}
 
@@ -35,9 +35,7 @@ class StreamsHttpPOST {
 	}
 
 	public function addData(Array $data) {
-		foreach ($data as $name => $value) {
-			$this->_form->addData($name, $value);
-		}
+			$this->_form->mergeData($data);
 	}
 
 
@@ -51,22 +49,21 @@ class StreamsHttpPOST {
 	}
 }
 
-class FormData
+class FormData extends ArrayObject
 {
-	private $_data = array();
-
-	public function  __construct($data = array()) {
-		foreach ($data as $name => $value) {
-			$this->addData($name, $value);
-		}
-	}
 
 	public function addData($name, $value) {
-		$this->_data[$name] = $value;
+		$this[$name] = $value;
+	}
+
+	public function mergeData($newData) {
+		$oldData = $this->getData();
+		$data = array_merge($oldData, $newData);
+		$this->exchangeArray($data);
 	}
 
 	public function getData() {
-		return $this->_data;
+		return $this->getArrayCopy();
 	}
 
 	public function createStreamContext() {
@@ -74,7 +71,7 @@ class FormData
 			array(
 				'method' => 'POST',
 				'header' => $this->getHeader(),
-				'timeout' => 30, # response timeout
+				'timeout' => 30, // response timeout
 				'content' => $this->getContentString(),
 			)
 		);
@@ -87,7 +84,7 @@ class FormData
 	}
 
 	public function getContentString() {
-		return http_build_query($this->getData());
+		return http_build_query($this);
 	}
 }
 
@@ -95,16 +92,17 @@ class FormData
 class MultipartFormData extends FormData
 {
 
-	private $_files = array();
+	private $_files;
 	private $_multipartBoundary = "";
 
 	public function  __construct($data = array()) {
 		parent::__construct($data);
 		$this->_multipartBoundary = md5(microtime(true));
+		$this->_files = new ArrayObject();
 	}
 
 	public function addFile($fieldName, $file){
-		$this->_files[$fieldName] = $file;
+		$this->_files[$fieldName] = new SplFileInfo($file);
 	}
 
 	public  function getHeader() {
@@ -113,26 +111,22 @@ class MultipartFormData extends FormData
 
 	public function  getContentString() {
 		$content = "";
-		foreach ($this->_files as $fieldName => $filename) {
-			$filename = realpath($filename);
-			$file_contents = file_get_contents($filename);
+		foreach ($this->_files as $fieldName => $file) {
 
 			$content .= "--{$this->_multipartBoundary}".PHP_EOL.
-			'Content-Disposition: form-data; name="'.$fieldName.'"; filename="'.basename($filename).'"'.PHP_EOL.
-			"Content-Type: application/zip".PHP_EOL.
-			$file_contents.PHP_EOL;
+			'Content-Disposition: form-data; name="'.$fieldName.'"; filename="'.basename($file->getBasename()).'"'.PHP_EOL.
+			"Content-Type: ".mime_content_type((string) $file).PHP_EOL.PHP_EOL.
+			file_get_contents((string) $file).PHP_EOL;
 
 		}
 
 		$content .= "--{$this->_multipartBoundary}".PHP_EOL.
 		'Content-Disposition: form-data; ';
-	    foreach ($this->getData() as $name => $value) {
-			$content .= 'name="'.$name.'"'.PHP_EOL.
-			$value.PHP_EOL;
+	    foreach ($this as $name => $value) {
+			$content .= 'name="'.$name.'"'.PHP_EOL.PHP_EOL.$value;
 		}
-
 		// signal end of request (note the trailing "--")
-		$content .= "--{$this->_multipartBoundary}--".PHP_EOL;
+		$content .= PHP_EOL."--{$this->_multipartBoundary}--".PHP_EOL;
 		return $content;
 	}
 }

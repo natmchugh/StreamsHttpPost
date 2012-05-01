@@ -1,6 +1,5 @@
 <?php
 
-require_once 'PHPUnit/Framework.php';
 
 require_once dirname(__FILE__) . '/../StreamsHttpPOST.php';
 
@@ -53,27 +52,31 @@ class StreamsHttpPOSTTest extends PHPUnit_Framework_TestCase {
 		$contents = $this->object->post();
 		$expected = "bat";
 		$this->assertContains($expected, $contents);
+		var_dump($contents);
 	}
 
 	public function testPostFilesToLocalhost() {
 		$data = array('foo' => 'bar');
 		$multipartFormData = new MultipartFormData($data);
-		$multipartFormData->addFile('test', __FILE__);
+		$filename = __DIR__.'/testLoad.txt';
+		$multipartFormData->addFile('test',$filename);
 		$this->object = new StreamsHttpPOST('http://localhost/outputPost.php',$multipartFormData);
 		$contents = $this->object->post();
 		$expected = "bar";
 		$this->assertContains($expected, $contents);
-
-		$this->assertContains(basename(__FILE__), $contents);
+		$this->assertContains(basename($filename), $contents);
+		$this->assertContains(file_get_contents($filename), $contents);
+		var_dump($contents);
 	}
 
 
 	public function testAddFilesToLocalhost() {
 		$this->object = new StreamsHttpPOST('http://localhost/outputPost.php');
-		$this->object->addFile('test', __FILE__);
+		$filename = __DIR__.'/testLoad.txt';
+		$this->object->addFile('test', $filename);
 		$contents = $this->object->post();
-		var_dump($contents);
-		$this->assertContains(basename(__FILE__), $contents);
+		$this->assertContains(basename($filename), $contents);
+		$this->assertContains(file_get_contents($filename), $contents);
 	}
 	public function testGetResponseCode() {
 		$this->object->post();
